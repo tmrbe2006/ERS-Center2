@@ -1,0 +1,12 @@
+{
+  "name": "ERS-2026-1",
+  "description": "A comprehensive Emergency Response System with Role-based access, Realtime Firebase alerts, and Gemini AI reporting.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

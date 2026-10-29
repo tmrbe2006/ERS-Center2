@@ -1,0 +1,32 @@
+
+{
+  "short_name": "ERS",
+  "name": "ERS System - Emergency Response System",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dc004e'%3E%3Cpath d='M12 2L1 21h22L12 2zm0 3.45L20.14 19H3.86L12 5.45zM11 16h2v2h-2v-2zm0-7h2v5h-2V9z'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dc004e'%3E%3Cpath d='M12 2L1 21h22L12 2zm0 3.45L20.14 19H3.86L12 5.45zM11 16h2v2h-2v-2zm0-7h2v5h-2V9z'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/index.html",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui"],
+  "theme_color": "#dc004e",
+  "background_color": "#121212",
+  "orientation": "portrait",
+  "description": "نظام الاستجابة للطوارئ الذكي ERS System - إنذار فوري وتنبيهات خلفية مستمرة.",
+  "permissions": [
+    "notifications",
+    "geolocation",
+    "background-sync",
+    "periodic-background-sync"
+  ]
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ERS System</string>
+    <string name="title_activity_main">ERS System</string>
+    <string name="package_name">com.ers.emergency</string>
+    <string name="custom_url_scheme">com.ers.emergency</string>
+</resources>

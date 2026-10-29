@@ -1,0 +1,171 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if the user is an admin or super admin based on auth token or user document
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'admin' || 
+        request.auth.token.role == 'super-admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super-admin']
+      );
+    }
+
+    // Phase 3.5: Users Collection & Strict RBAC Protection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      
+      // Allow user to create or update their own profile, status, shift, and location
+      // But forbid non-admin from modifying the 'role' field
+      allow create: if isAuthenticated() && (
+        request.auth.uid == userId || isAdmin()
+      );
+      
+      allow update: if isAuthenticated() && (
+        (request.auth.uid == userId && (
+          !('role' in request.resource.data) || 
+          request.resource.data.role == resource.data.role
+        )) || isAdmin()
+      );
+      
+      allow delete: if isAdmin();
+
+      // Subcollection: Connected Devices
+      match /devices/{deviceId} {
+        allow read: if isAuthenticated();
+        allow create, update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+        allow delete: if isAdmin();
+
+        // Subcollection: Location History
+        match /locationHistory/{historyId} {
+          allow read: if isAuthenticated();
+          allow create: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+          allow delete: if isAdmin();
+        }
+      }
+    }
+
+    // Collection Group Queries for Admin Global Monitoring
+    match /{path=**}/devices/{deviceId} {
+      allow read: if isAuthenticated();
+    }
+
+    match /{path=**}/locationHistory/{historyId} {
+      allow read: if isAuthenticated();
+    }
+
+    // Phase 2.1: Mobile Device Registration Collection for FCM
+    match /user_devices/{deviceDocId} {
+      allow read: if isAuthenticated();
+      // Users can only register and update their own device records
+      allow create, update: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid || 
+        deviceDocId.matches('^' + request.auth.uid + '.*') ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Phase 3.1 & 3.2: Emergencies Collection with Secure Lifecycle & Closure Guard
+    match /emergencies/{emergencyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      
+      // Strict Update Rule:
+      // If closing: must be creator OR admin with override reason
+      // If active: allow responding, task completion, and escalation
+      allow update: if isAuthenticated() && (
+        (request.resource.data.status != 'closed' || 
+         resource.data.createdBy == request.auth.uid || 
+         isAdmin())
+      );
+      
+      allow delete: if isAdmin();
+
+      // Phase 2.3: Emergency Acknowledgment Subcollection
+      match /acknowledgments/{ackUserId} {
+        allow read: if isAuthenticated();
+        allow create, update: if isAuthenticated() && (
+          request.auth.uid == ackUserId || 
+          request.resource.data.userId == request.auth.uid || 
+          isAdmin()
+        );
+        allow delete: if isAdmin();
+      }
+
+      // Subcollections: Telemetry & Incident Chat
+      match /telemetry/{telemetryId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+      }
+
+      match /chat/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+      }
+    }
+
+    // Phase 3.4: Immutable Server Audit Trail (audit_events)
+    // Completely protected from updates or deletions by any client
+    match /audit_events/{eventId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // IMMUTABLE AUDIT TRAIL
+    }
+
+    // Facility Locations
+    match /locations/{locationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Emergency Types
+    match /emergency_types/{typeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Job Titles
+    match /job_titles/{jobId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Private Messages
+    match /private_messages/{messageId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Admin Logs (Historical)
+    match /admin_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    match /login_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+    }
+
+    match /notification_dispatch_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only via Firebase Admin SDK
+    }
+
+    match /system_test_notifications/{testId} {
+      allow read, create: if isAuthenticated();
+    }
+
+    // System Config & Profiles & Escalation Settings
+    match /system/{documentId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

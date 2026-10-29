@@ -1,0 +1,13 @@
+{
+  "name": "ers-functions",
+  "description": "Firebase Cloud Functions for ERS Native Emergency Push Notifications and Dispatch",
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "index.js",
+  "private": true
+}
