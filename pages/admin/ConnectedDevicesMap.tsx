@@ -7,7 +7,7 @@ import {
   doc, updateDoc, orderBy, limit 
 } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
-import { ConnectedDevice, LocationHistoryEntry, UserRole } from '../../types';
+import { ConnectedDevice, LocationHistoryEntry, UserRole, EmergencyStatus } from '../../types';
 import { deviceTrackingService } from '../../services/deviceTrackingService';
 import { Button } from '../../components/Button';
 import { 
